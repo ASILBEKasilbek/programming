@@ -171,6 +171,11 @@ def calculate_bill(guest: Guest, room: Room) -> dict:
     # Tunlar sonini hisoblash (minimal 1)
     nights = max(1, guest.nights)
 
+    # Erta check-out tekshiruvi
+    if guest.check_in_time:
+        actual_nights = max(1, (datetime.now() - guest.check_in_time).days)
+        nights = min(nights, actual_nights)  # Erta check-out uchun
+
     # Xona narxi
     room_charge = room.price_per_night * nights
 
