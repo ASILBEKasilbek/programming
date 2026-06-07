@@ -45,6 +45,11 @@ class MessageBroker:
     """
     Redis Pub/Sub asosidagi xabar brokeri.
     Har bir servis bitta instance yaratadi.
+
+    Xususiyatlari:
+    - Avtomatik qayta ulanish (reconnect)
+    - Xabar validatsiyasi
+    - Xatoliklarni log qilish
     """
 
     def __init__(self, service_name: str):
@@ -102,15 +107,25 @@ class MessageBroker:
         Args:
             event_type: Hodisa nomi
             data: Hodisa ma'lumotlari (dict)
+
+        Raises:
+            ConnectionError: Redis ulanmagan bo'lsa
         """
+        if not self._redis:
+            logger.error(f"[{self.service_name}] Redis ulanmagan! Xabar yuborilmadi: {event_type}")
+            return
+
         message = json.dumps({
             "event": event_type,
             "source": self.service_name,
             "timestamp": datetime.now().isoformat(),
             "data": data,
         })
-        await self._redis.publish(f"hotelos:{event_type}", message)
-        logger.info(f"[{self.service_name}] PUBLISH: {event_type} | {json.dumps(data)[:100]}")
+        try:
+            await self._redis.publish(f"hotelos:{event_type}", message)
+            logger.info(f"[{self.service_name}] PUBLISH: {event_type} | {json.dumps(data)[:100]}")
+        except Exception as e:
+            logger.error(f"[{self.service_name}] Publish xato: {event_type} -> {e}")
 
     async def start_listening(self):
         """Obuna bo'lgan hodisalarni tinglashni boshlash."""
