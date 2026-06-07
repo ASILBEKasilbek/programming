@@ -301,6 +301,12 @@ def get_dashboard_html() -> str:
                 statusText.textContent = 'Uzildi — qayta ulanmoqda...';
                 setTimeout(connect, 3000);
             };
+
+            ws.onerror = (e) => {
+                console.error('WebSocket xato:', e);
+                statusDot.className = 'status-dot disconnected';
+                statusText.textContent = 'Xato — qayta ulanmoqda...';
+            };
         }
 
         function handleEvent(event) {
