@@ -155,7 +155,13 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
 
 async def handle_dashboard_page(request: web.Request) -> web.Response:
     """GET / — Dashboard HTML sahifasi."""
-    html = get_dashboard_html()
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    html_path = os.path.join(static_dir, 'index.html')
+    if os.path.exists(html_path):
+        with open(html_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+    else:
+        html = get_dashboard_html()
     return web.Response(text=html, content_type='text/html')
 
 
@@ -199,6 +205,56 @@ async def handle_get_state(request: web.Request) -> web.Response:
 async def handle_get_events(request: web.Request) -> web.Response:
     """GET /events — Hodisalar jurnali."""
     return web.json_response({"events": event_log})
+
+
+# ═══════════════════════════════════════════════════════
+# API PROXY (Dashboard orqali barcha servislarni birlashtirish)
+# ═══════════════════════════════════════════════════════
+
+SERVICE_MAP = {
+    "reception": "http://localhost:8001",
+    "housekeeping": "http://localhost:8002",
+    "roomservice": "http://localhost:8003",
+    "maintenance": "http://localhost:8004",
+}
+
+
+async def proxy_to_service(request: web.Request) -> web.Response:
+    """API so'rovlarini tegishli mikroservisga yo'naltirish."""
+    path = request.path
+    # /api/reception/check-in -> http://localhost:8001/check-in
+    parts = path.split("/")
+    # parts = ['', 'api', 'reception', 'check-in']
+    if len(parts) < 3:
+        return web.json_response({"error": "Invalid path"}, status=400)
+
+    service_name = parts[2]
+    service_path = "/" + "/".join(parts[3:]) if len(parts) > 3 else "/"
+
+    base_url = SERVICE_MAP.get(service_name)
+    if not base_url:
+        return web.json_response({"error": f"Service '{service_name}' not found"}, status=404)
+
+    target_url = base_url + service_path
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            method = request.method
+            headers = {"Content-Type": "application/json"}
+
+            if method in ("POST", "PUT", "PATCH"):
+                body = await request.read()
+                async with session.request(method, target_url, data=body, headers=headers) as resp:
+                    data = await resp.json()
+                    return web.json_response(data, status=resp.status)
+            else:
+                async with session.request(method, target_url) as resp:
+                    data = await resp.json()
+                    return web.json_response(data, status=resp.status)
+    except aiohttp.ClientConnectorError:
+        return web.json_response({"error": f"Service '{service_name}' unavailable"}, status=503)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 
 def get_dashboard_html() -> str:
@@ -418,6 +474,13 @@ def create_app() -> web.Application:
     app.router.add_get("/ws", websocket_handler)
     app.router.add_get("/state", handle_get_state)
     app.router.add_get("/events", handle_get_events)
+
+    # Proxy API routes (for single-origin access from browser)
+    app.router.add_route("*", "/api/reception/{path:.*}", proxy_to_service)
+    app.router.add_route("*", "/api/housekeeping/{path:.*}", proxy_to_service)
+    app.router.add_route("*", "/api/roomservice/{path:.*}", proxy_to_service)
+    app.router.add_route("*", "/api/maintenance/{path:.*}", proxy_to_service)
+
     app.on_startup.append(start_broker_sub)
     app.on_cleanup.append(stop_broker_sub)
     return app

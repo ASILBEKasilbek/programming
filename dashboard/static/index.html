@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelOS — Mehmonxona Boshqaruv Tizimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --primary-light: #16213e;
+            --accent: #c9a96e;
+            --accent-hover: #d4b87a;
+            --bg-dark: #0f0f1a;
+            --bg-card: #1e2732;
+            --bg-card-hover: #253341;
+            --text: #e7e9ea;
+            --text-muted: #8899a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --purple: #9b59b6;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        
+        /* ═══ LOGIN PAGE ═══ */
+        .login-page { display: flex; min-height: 100vh; }
+        .login-left { flex: 1; background: linear-gradient(135deg, var(--primary) 0%, #0a0a1a 100%); display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; overflow: hidden; }
+        .login-left::before { content: ''; position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%); top: -100px; right: -100px; }
+        .login-left::after { content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(201,169,110,0.05) 0%, transparent 70%); bottom: -50px; left: -50px; }
+        .login-brand { text-align: center; z-index: 1; }
+        .login-brand h1 { font-family: 'Playfair Display', serif; font-size: 48px; color: var(--accent); margin-bottom: 16px; }
+        .login-brand p { color: var(--text-muted); font-size: 16px; max-width: 400px; line-height: 1.6; }
+        .login-brand .features { margin-top: 40px; text-align: left; }
+        .login-brand .feature { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: var(--text-muted); font-size: 14px; }
+        .login-brand .feature-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(201,169,110,0.1); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        
+        .login-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; background: var(--bg-dark); }
+        .login-form { width: 100%; max-width: 400px; }
+        .login-form h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; }
+        .login-form .subtitle { color: var(--text-muted); margin-bottom: 32px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 1px solid #2d3748; border-radius: 8px; background: var(--bg-card); color: var(--text); font-size: 15px; font-family: inherit; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; }
+        .btn-primary { background: var(--accent); color: var(--primary); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,169,110,0.3); }
+        .btn-outline { background: transparent; border: 1px solid #2d3748; color: var(--text); margin-top: 12px; }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+        .login-error { background: rgba(231,76,60,0.1); border: 1px solid var(--danger); border-radius: 8px; padding: 12px; color: var(--danger); font-size: 13px; margin-bottom: 16px; display: none; }
+
+        /* ═══ MAIN LAYOUT ═══ */
+        .app { display: none; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--primary); position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 0; overflow-y: auto; border-right: 1px solid #2d3748; z-index: 100; transition: transform 0.3s; }
+        .sidebar-brand { padding: 0 24px 24px; border-bottom: 1px solid rgba(201,169,110,0.2); margin-bottom: 16px; }
+        .sidebar-brand h1 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); }
+        .sidebar-brand small { color: var(--text-muted); font-size: 11px; }
+        .nav-section { padding: 8px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 16px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; font-size: 14px; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(201,169,110,0.05); color: var(--text); }
+        .nav-item.active { background: rgba(201,169,110,0.1); color: var(--accent); border-left-color: var(--accent); }
+        .nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+        .nav-item .badge-nav { margin-left: auto; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+        .user-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 24px; border-top: 1px solid #2d3748; display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--primary); }
+        .user-details { flex: 1; }
+        .user-details .name { font-size: 13px; font-weight: 500; }
+        .user-details .role { font-size: 11px; color: var(--text-muted); }
+        .logout-btn { cursor: pointer; color: var(--text-muted); font-size: 18px; padding: 4px; }
+        .logout-btn:hover { color: var(--danger); }
+
+        .main-content { margin-left: 260px; padding: 24px 32px; min-height: 100vh; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; }
+        .page-header .status-bar { display: flex; align-items: center; gap: 12px; }
+        .ws-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+        .ws-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+        .ws-dot.connected { background: var(--success); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        /* ═══ STATS CARDS ═══ */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid #2d3748; }
+        .stat-card .stat-icon { font-size: 24px; margin-bottom: 8px; }
+        .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+        .stat-card .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ═══ PANELS ═══ */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .panel { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid #2d3748; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2d3748; }
+        .panel-header h3 { font-size: 15px; font-weight: 600; }
+        .panel-header .count { background: rgba(201,169,110,0.1); color: var(--accent); padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+        /* ═══ ROOMS GRID ═══ */
+        .rooms-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .room-card { padding: 14px 10px; border-radius: 10px; text-align: center; border: 1px solid #2d3748; transition: all 0.2s; cursor: pointer; position: relative; }
+        .room-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .room-card .room-number { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .room-card .room-type { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .room-card .room-status { font-size: 11px; margin-top: 6px; padding: 2px 8px; border-radius: 6px; display: inline-block; }
+        .room-card .room-guest { font-size: 10px; color: var(--text-muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .room-card.status-clean { border-color: var(--success); background: rgba(46,204,113,0.05); }
+        .room-card.status-clean .room-status { background: rgba(46,204,113,0.2); color: var(--success); }
+        .room-card.status-occupied { border-color: var(--info); background: rgba(52,152,219,0.05); }
+        .room-card.status-occupied .room-status { background: rgba(52,152,219,0.2); color: var(--info); }
+        .room-card.status-dirty { border-color: var(--warning); background: rgba(243,156,18,0.05); }
+        .room-card.status-dirty .room-status { background: rgba(243,156,18,0.2); color: var(--warning); }
+        .room-card.status-cleaning { border-color: var(--purple); background: rgba(155,89,182,0.05); }
+        .room-card.status-cleaning .room-status { background: rgba(155,89,182,0.2); color: var(--purple); }
+        .room-card.status-maintenance { border-color: var(--danger); background: rgba(231,76,60,0.05); }
+        .room-card.status-maintenance .room-status { background: rgba(231,76,60,0.2); color: var(--danger); }
+
+        /* ═══ TABLES / LISTS ═══ */
+        .list-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; background: rgba(15,15,26,0.5); transition: background 0.2s; }
+        .list-item:hover { background: rgba(201,169,110,0.05); }
+        .list-item .item-icon { font-size: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(201,169,110,0.1); }
+        .list-item .item-info { flex: 1; }
+        .list-item .item-title { font-size: 13px; font-weight: 500; }
+        .list-item .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .list-item .item-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+        .badge-success { background: rgba(46,204,113,0.2); color: var(--success); }
+        .badge-warning { background: rgba(243,156,18,0.2); color: var(--warning); }
+        .badge-danger { background: rgba(231,76,60,0.2); color: var(--danger); }
+        .badge-info { background: rgba(52,152,219,0.2); color: var(--info); }
+        .badge-purple { background: rgba(155,89,182,0.2); color: var(--purple); }
+
+        /* ═══ EVENT LOG ═══ */
+        .event-log { max-height: 400px; overflow-y: auto; }
+        .event-entry { padding: 10px 12px; border-left: 3px solid var(--accent); margin-bottom: 6px; background: rgba(15,15,26,0.5); border-radius: 0 8px 8px 0; font-size: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity:0; transform: translateX(-10px); } to { opacity:1; transform: translateX(0); } }
+        .event-entry .event-time { color: var(--text-muted); font-size: 10px; }
+        .event-entry .event-type { color: var(--accent); font-weight: 600; margin: 0 6px; }
+        .event-entry .event-data { color: var(--text-muted); }
+
+        /* ═══ ACTION FORMS ═══ */
+        .action-panel { background: var(--bg-card); border-radius: var(--radius); padding: 24px; border: 1px solid #2d3748; margin-bottom: 20px; }
+        .action-panel h3 { margin-bottom: 16px; font-size: 15px; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .form-row .form-group { flex: 1; margin-bottom: 0; }
+        .btn-sm { padding: 10px 20px; font-size: 13px; width: auto; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-info:hover { background: #2980b9; }
+
+        /* ═══ TOAST ═══ */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast { padding: 14px 20px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; animation: toastIn 0.3s ease; box-shadow: var(--shadow); }
+        .toast-success { background: var(--success); color: white; }
+        .toast-error { background: var(--danger); color: white; }
+        .toast-info { background: var(--info); color: white; }
+        @keyframes toastIn { from { opacity:0; transform: translateX(50px); } to { opacity:1; transform: translateX(0); } }
+
+        /* ═══ PAGES (hidden by default) ═══ */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ═══ RESPONSIVE ═══ */
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .rooms-grid { grid-template-columns: repeat(3, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .login-page { flex-direction: column; }
+            .login-left { min-height: 30vh; }
+            .rooms-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ═══════════ LOGIN PAGE ═══════════ -->
+    <div class="login-page" id="login-page">
+        <div class="login-left">
+            <div class="login-brand">
+                <h1>🏨 HotelOS</h1>
+                <p>Real Vaqtli Mehmonxona Boshqaruv Tizimi — Mikroservislar arxitekturasi, Redis Pub/Sub va WebSocket texnologiyalari asosida qurilgan</p>
+                <div class="features">
+                    <div class="feature"><div class="feature-icon">🔄</div> Real-time WebSocket yangilanishlar</div>
+                    <div class="feature"><div class="feature-icon">🏗️</div> 4 ta mustaqil mikroservis</div>
+                    <div class="feature"><div class="feature-icon">📡</div> Redis Pub/Sub xabar brokeri</div>
+                    <div class="feature"><div class="feature-icon">🔒</div> Xavfsiz autentifikatsiya</div>
+                </div>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-form">
+                <h2>Tizimga Kirish</h2>
+                <p class="subtitle">Operatsiyalar paneliga kirish uchun ma'lumotlaringizni kiriting</p>
+                <div class="login-error" id="login-error"></div>
+                <div class="form-group">
+                    <label>Foydalanuvchi nomi</label>
+                    <input type="text" id="login-username" placeholder="admin" value="admin">
+                </div>
+                <div class="form-group">
+                    <label>Parol</label>
+                    <input type="password" id="login-password" placeholder="••••••••" value="hotelos2024">
+                </div>
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select id="login-role">
+                        <option value="manager">🏢 Menejer (To'liq kirish)</option>
+                        <option value="receptionist">🛎️ Qabulchi</option>
+                        <option value="housekeeper">🧹 Tozalovchi</option>
+                        <option value="technician">🔧 Texnik xodim</option>
+                        <option value="guest">👤 Mehmon</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="doLogin()">Kirish</button>
+                <button class="btn btn-outline" onclick="doGuestLogin()">👤 Mehmon sifatida ko'rish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ MAIN APP ═══════════ -->
+    <div class="app" id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <h1>🏨 HotelOS</h1>
+                <small>Operations Dashboard v2.0</small>
+            </div>
+            <div class="nav-section">ASOSIY</div>
+            <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+                <span class="icon">📊</span> Bosh sahifa
+            </div>
+            <div class="nav-item" data-page="rooms" onclick="switchPage('rooms')">
+                <span class="icon">🛏️</span> Xonalar
+            </div>
+            <div class="nav-section">XIZMATLAR</div>
+            <div class="nav-item" data-page="reception" onclick="switchPage('reception')">
+                <span class="icon">🛎️</span> Qabul xizmati
+            </div>
+            <div class="nav-item" data-page="housekeeping" onclick="switchPage('housekeeping')">
+                <span class="icon">🧹</span> Tozalash <span class="badge-nav" id="nav-cleaning-count" style="display:none">0</span>
+            </div>
+            <div class="nav-item" data-page="roomservice" onclick="switchPage('roomservice')">
+                <span class="icon">🍽️</span> Xona xizmati <span class="badge-nav" id="nav-order-count" style="display:none">0</span>
+            </div>
+            <div class="nav-item" data-page="maintenance" onclick="switchPage('maintenance')">
+                <span class="icon">🔧</span> Texnik xizmat <span class="badge-nav" id="nav-maint-count" style="display:none">0</span>
+            </div>
+            <div class="nav-section">MONITORING</div>
+            <div class="nav-item" data-page="events" onclick="switchPage('events')">
+                <span class="icon">📋</span> Hodisalar
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">A</div>
+                <div class="user-details">
+                    <div class="name" id="user-name">Admin</div>
+                    <div class="role" id="user-role">Menejer</div>
+                </div>
+                <div class="logout-btn" onclick="doLogout()" title="Chiqish">⏻</div>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="page-header">
+                <h2 id="page-title">📊 Bosh Sahifa</h2>
+                <div class="status-bar">
+                    <div class="ws-indicator">
+                        <div class="ws-dot" id="ws-dot"></div>
+                        <span id="ws-status">Ulanmoqda...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ DASHBOARD PAGE ═══ -->
+            <div class="page active" id="page-dashboard">
+                <div class="stats-grid" id="stats-grid"></div>
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header"><h3>🛏️ Xonalar holati</h3><span class="count" id="room-count">10</span></div>
+                        <div class="rooms-grid" id="dashboard-rooms"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><h3>📋 Oxirgi hodisalar</h3></div>
+                        <div class="event-log" id="dashboard-events"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ROOMS PAGE ═══ -->
+            <div class="page" id="page-rooms">
+                <div class="panel" style="margin-bottom:20px">
+                    <div class="panel-header"><h3>Barcha Xonalar</h3><span class="count" id="rooms-total">10</span></div>
+                    <div class="rooms-grid" id="rooms-full-grid"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header"><h3>Xona holatlari statistikasi</h3></div>
+                        <div id="rooms-stats"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><h3>Joriy mehmonlar</h3></div>
+                        <div id="rooms-guests"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ RECEPTION PAGE ═══ -->
+            <div class="page" id="page-reception">
+                <div class="grid-2">
+                    <div class="action-panel">
+                        <h3>🛎️ Check-In</h3>
+                        <div class="form-group"><label>Mehmon ismi</label><input type="text" id="checkin-name" placeholder="Ali Valiyev"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Xona turi</label>
+                                <select id="checkin-type"><option value="single">Single</option><option value="double" selected>Double</option><option value="suite">Suite</option><option value="accessible">Accessible</option></select>
+                            </div>
+                            <div class="form-group"><label>Qavat</label>
+                                <select id="checkin-floor"><option value="">Farqi yo'q</option><option value="1">1-qavat</option><option value="2">2-qavat</option></select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Tunlar</label><input type="number" id="checkin-nights" value="1" min="1" max="30"></div>
+                            <div class="form-group"><label>Liftga yaqin</label>
+                                <select id="checkin-elevator"><option value="false">Yo'q</option><option value="true">Ha</option></select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="doCheckIn()">✓ Check-In</button>
+                    </div>
+                    <div class="action-panel">
+                        <h3>🚪 Check-Out</h3>
+                        <div class="form-group"><label>Xona raqami</label><input type="number" id="checkout-room" placeholder="101"></div>
+                        <button class="btn btn-danger btn-sm" onclick="doCheckOut()">✓ Check-Out</button>
+                        <div id="checkout-result" style="margin-top:16px"></div>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px">
+                    <div class="panel-header"><h3>Joriy Mehmonlar</h3></div>
+                    <div id="reception-guests"></div>
+                </div>
+            </div>
+
+            <!-- ═══ HOUSEKEEPING PAGE ═══ -->
+            <div class="page" id="page-housekeeping">
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header"><h3>🧹 Tozalash Navbati</h3><span class="count" id="hk-queue-count">0</span></div>
+                        <div id="hk-queue"></div>
+                        <button class="btn btn-info btn-sm" style="margin-top:12px" onclick="doStartCleaning()">Navbatdan olish va boshlash</button>
+                    </div>
+                    <div class="action-panel">
+                        <h3>Xonani toza deb belgilash</h3>
+                        <div class="form-group"><label>Xona raqami</label><input type="number" id="hk-room" placeholder="204"></div>
+                        <button class="btn btn-success btn-sm" onclick="doMarkClean()">✓ Toza</button>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px">
+                    <div class="panel-header"><h3>Tozalash tarixi</h3></div>
+                    <div id="hk-history"></div>
+                </div>
+            </div>
+
+            <!-- ═══ ROOM SERVICE PAGE ═══ -->
+            <div class="page" id="page-roomservice">
+                <div class="grid-2">
+                    <div class="action-panel">
+                        <h3>🍽️ Yangi Buyurtma</h3>
+                        <div class="form-group"><label>Xona raqami</label><input type="number" id="order-room" placeholder="101"></div>
+                        <div class="form-group"><label>Buyurtmalar</label>
+                            <div id="order-items-form"></div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="doPlaceOrder()">📝 Buyurtma berish</button>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><h3>📋 Menyu</h3></div>
+                        <div id="menu-list"></div>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px">
+                    <div class="panel-header"><h3>Faol Buyurtmalar</h3><span class="count" id="rs-active-count">0</span></div>
+                    <div id="rs-orders"></div>
+                </div>
+            </div>
+
+            <!-- ═══ MAINTENANCE PAGE ═══ -->
+            <div class="page" id="page-maintenance">
+                <div class="grid-2">
+                    <div class="action-panel">
+                        <h3>🔧 Yangi Muammo</h3>
+                        <div class="form-group"><label>Xona raqami</label><input type="number" id="maint-room" placeholder="105"></div>
+                        <div class="form-group"><label>Tavsif</label><input type="text" id="maint-desc" placeholder="Singan dush"></div>
+                        <div class="form-group"><label>Ustuvorlik</label>
+                            <select id="maint-priority"><option value="critical">🔴 Kritik</option><option value="high">🟠 Yuqori</option><option value="normal" selected>🔵 Normal</option><option value="low">⚪ Past</option></select>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="doReportIssue()">📝 Hisobot</button>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><h3>Ustuvorlik Navbati</h3></div>
+                        <div id="maint-queue"></div>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px">
+                    <div class="panel-header"><h3>Barcha So'rovlar</h3><span class="count" id="maint-total">0</span></div>
+                    <div id="maint-requests"></div>
+                </div>
+            </div>
+
+            <!-- ═══ EVENTS PAGE ═══ -->
+            <div class="page" id="page-events">
+                <div class="panel">
+                    <div class="panel-header"><h3>📋 Real-time Hodisalar Jurnali</h3><span class="count" id="events-count">0</span></div>
+                    <div class="event-log" id="full-event-log" style="max-height:600px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════
+    let ws = null;
+    let currentUser = null;
+    let stateData = { rooms: {}, orders: {}, maintenance: {} };
+    const API = '';
+
+    // ═══════════════════════════════════════════════════════
+    // AUTH
+    // ═══════════════════════════════════════════════════════
+    const USERS = {
+        admin: { password: 'hotelos2024', name: 'Administrator', role: 'manager' },
+        reception: { password: 'reception123', name: 'Qabulchi', role: 'receptionist' },
+        cleaner: { password: 'cleaner123', name: 'Tozalovchi', role: 'housekeeper' },
+        technician: { password: 'tech123', name: 'Texnik', role: 'technician' },
+        guest: { password: 'guest', name: 'Mehmon', role: 'guest' }
+    };
+
+    function doLogin() {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const role = document.getElementById('login-role').value;
+        const errEl = document.getElementById('login-error');
+
+        const user = USERS[username];
+        if (!user || user.password !== password) {
+            errEl.textContent = 'Noto\'g\'ri foydalanuvchi nomi yoki parol';
+            errEl.style.display = 'block';
+            return;
+        }
+        errEl.style.display = 'none';
+        currentUser = { username, name: user.name, role };
+        localStorage.setItem('hotelos_user', JSON.stringify(currentUser));
+        showApp();
+    }
+
+    function doGuestLogin() {
+        currentUser = { username: 'guest', name: 'Mehmon', role: 'guest' };
+        localStorage.setItem('hotelos_user', JSON.stringify(currentUser));
+        showApp();
+    }
+
+    function doLogout() {
+        localStorage.removeItem('hotelos_user');
+        currentUser = null;
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('login-page').style.display = 'flex';
+        if (ws) ws.close();
+    }
+
+    function showApp() {
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('user-name').textContent = currentUser.name;
+        document.getElementById('user-role').textContent = getRoleName(currentUser.role);
+        document.getElementById('user-avatar').textContent = currentUser.name[0];
+        connectWebSocket();
+        loadState();
+        buildMenuForm();
+    }
+
+    function getRoleName(role) {
+        const names = { manager:'Menejer', receptionist:'Qabulchi', housekeeper:'Tozalovchi', technician:'Texnik', guest:'Mehmon' };
+        return names[role] || role;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // WEBSOCKET
+    // ═══════════════════════════════════════════════════════
+    function connectWebSocket() {
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(protocol + '//' + location.host + '/ws');
+        ws.onopen = () => {
+            document.getElementById('ws-dot').classList.add('connected');
+            document.getElementById('ws-status').textContent = 'Jonli ✓';
+        };
+        ws.onmessage = (e) => {
+            const event = JSON.parse(e.data);
+            handleEvent(event);
+        };
+        ws.onclose = () => {
+            document.getElementById('ws-dot').classList.remove('connected');
+            document.getElementById('ws-status').textContent = 'Uzildi...';
+            setTimeout(connectWebSocket, 3000);
+        };
+        ws.onerror = () => {
+            document.getElementById('ws-dot').classList.remove('connected');
+        };
+    }
+
+    function handleEvent(event) {
+        addEventToLog(event);
+        if (event.event && (event.event.includes('room') || event.event.includes('guest') || event.event.includes('order') || event.event.includes('maintenance'))) {
+            loadState();
+        }
+    }
+
+    function addEventToLog(event) {
+        if (!event.event || event.event === 'connected' || event.event === 'pong') return;
+        const logs = ['dashboard-events', 'full-event-log'];
+        logs.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const entry = document.createElement('div');
+            entry.className = 'event-entry';
+            const time = event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : '';
+            const data = event.data ? JSON.stringify(event.data).substring(0, 60) : '';
+            entry.innerHTML = `<span class="event-time">${time}</span><span class="event-type">${event.event||''}</span><span class="event-data">${data}</span>`;
+            el.insertBefore(entry, el.firstChild);
+            if (el.children.length > 50) el.removeChild(el.lastChild);
+        });
+        const countEl = document.getElementById('events-count');
+        if (countEl) countEl.textContent = document.getElementById('full-event-log').children.length;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // DATA LOADING
+    // ═══════════════════════════════════════════════════════
+    async function loadState() {
+        try {
+            const resp = await fetch(API + '/state');
+            stateData = await resp.json();
+            renderAll();
+        } catch(e) { console.error('State load error:', e); }
+    }
+
+    function renderAll() {
+        renderStats();
+        renderRooms();
+        renderGuests();
+        renderOrders();
+        renderMaintenance();
+        renderHousekeeping();
+    }
+
+    function renderStats() {
+        const rooms = stateData.rooms;
+        const orders = stateData.orders;
+        const maint = stateData.maintenance;
+        if (!rooms || !rooms.summary) return;
+        const s = rooms.summary;
+        document.getElementById('stats-grid').innerHTML = `
+            <div class="stat-card"><div class="stat-icon">🛏️</div><div class="stat-value">${s.total}</div><div class="stat-label">Jami xonalar</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${s.clean}</div><div class="stat-label">Toza / Mavjud</div></div>
+            <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-value">${s.occupied}</div><div class="stat-label">Band</div></div>
+            <div class="stat-card"><div class="stat-icon">🧹</div><div class="stat-value">${s.dirty + s.cleaning}</div><div class="stat-label">Tozalash kutmoqda</div></div>
+            <div class="stat-card"><div class="stat-icon">🍽️</div><div class="stat-value">${orders?.active_orders||0}</div><div class="stat-label">Faol buyurtmalar</div></div>
+            <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-value">${maint?.summary?.open||0}</div><div class="stat-label">Ochiq muammolar</div></div>
+        `;
+        // Nav badges
+        const dc = s.dirty + s.cleaning;
+        const navC = document.getElementById('nav-cleaning-count');
+        if (dc > 0) { navC.textContent = dc; navC.style.display = 'inline'; } else { navC.style.display = 'none'; }
+        const oc = orders?.active_orders || 0;
+        const navO = document.getElementById('nav-order-count');
+        if (oc > 0) { navO.textContent = oc; navO.style.display = 'inline'; } else { navO.style.display = 'none'; }
+        const mc = maint?.summary?.open || 0;
+        const navM = document.getElementById('nav-maint-count');
+        if (mc > 0) { navM.textContent = mc; navM.style.display = 'inline'; } else { navM.style.display = 'none'; }
+    }
+
+    function renderRooms() {
+        const rooms = stateData.rooms?.rooms;
+        if (!rooms) return;
+        const grids = ['dashboard-rooms', 'rooms-full-grid'];
+        grids.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = rooms.map(r => `
+                <div class="room-card status-${r.status}">
+                    <div class="room-number">${r.number}</div>
+                    <div class="room-type">${r.room_type}</div>
+                    <div class="room-status">${getStatusText(r.status)}</div>
+                    ${r.guest_name ? `<div class="room-guest">👤 ${r.guest_name}</div>` : ''}
+                </div>
+            `).join('');
+        });
+        // Rooms stats
+        const statsEl = document.getElementById('rooms-stats');
+        if (statsEl && stateData.rooms?.summary) {
+            const s = stateData.rooms.summary;
+            statsEl.innerHTML = `
+                <div class="list-item"><div class="item-icon">✅</div><div class="item-info"><div class="item-title">Toza</div></div><span class="item-badge badge-success">${s.clean}</span></div>
+                <div class="list-item"><div class="item-icon">👤</div><div class="item-info"><div class="item-title">Band</div></div><span class="item-badge badge-info">${s.occupied}</span></div>
+                <div class="list-item"><div class="item-icon">⚠️</div><div class="item-info"><div class="item-title">Iflos</div></div><span class="item-badge badge-warning">${s.dirty}</span></div>
+                <div class="list-item"><div class="item-icon">🧹</div><div class="item-info"><div class="item-title">Tozalanmoqda</div></div><span class="item-badge badge-purple">${s.cleaning}</span></div>
+                <div class="list-item"><div class="item-icon">🔧</div><div class="item-info"><div class="item-title">Texnik xizmat</div></div><span class="item-badge badge-danger">${s.maintenance}</span></div>
+            `;
+        }
+    }
+
+    function renderGuests() {
+        const rooms = stateData.rooms?.rooms;
+        if (!rooms) return;
+        const guests = rooms.filter(r => r.guest_name);
+        const els = ['rooms-guests', 'reception-guests'];
+        els.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (guests.length === 0) { el.innerHTML = '<p style="color:var(--text-muted);padding:12px">Hozircha mehmon yo\'q</p>'; return; }
+            el.innerHTML = guests.map(r => `
+                <div class="list-item">
+                    <div class="item-icon">👤</div>
+                    <div class="item-info"><div class="item-title">${r.guest_name}</div><div class="item-sub">Xona ${r.number} • ${r.room_type} • ${r.floor}-qavat</div></div>
+                    <span class="item-badge badge-info">Band</span>
+                </div>
+            `).join('');
+        });
+    }
+
+    function renderOrders() {
+        const orders = stateData.orders?.orders;
+        const el = document.getElementById('rs-orders');
+        if (!el) return;
+        if (!orders || orders.length === 0) { el.innerHTML = '<p style="color:var(--text-muted);padding:12px">Buyurtmalar yo\'q</p>'; return; }
+        const active = orders.filter(o => o.status !== 'delivered');
+        document.getElementById('rs-active-count').textContent = active.length;
+        el.innerHTML = orders.slice(0, 20).map(o => {
+            const badge = o.status === 'delivered' ? 'badge-success' : o.status === 'received' ? 'badge-warning' : 'badge-info';
+            return `<div class="list-item">
+                <div class="item-icon">🍽️</div>
+                <div class="item-info"><div class="item-title">${o.order_id} — Xona ${o.room_number}</div><div class="item-sub">$${o.total_price.toFixed(2)}</div></div>
+                <span class="item-badge ${badge}">${o.status}</span>
+                ${o.status !== 'delivered' ? `<button class="btn btn-sm btn-success" style="width:auto;padding:4px 10px;font-size:11px;margin-left:8px" onclick="advanceOrder('${o.order_id}','${o.status}')">→</button>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    function renderMaintenance() {
+        const requests = stateData.maintenance?.requests;
+        const el = document.getElementById('maint-requests');
+        const qEl = document.getElementById('maint-queue');
+        if (!el) return;
+        if (!requests || requests.length === 0) { el.innerHTML = '<p style="color:var(--text-muted);padding:12px">So\'rovlar yo\'q</p>'; if(qEl) qEl.innerHTML=''; return; }
+        document.getElementById('maint-total').textContent = requests.length;
+        el.innerHTML = requests.slice(0, 20).map(r => {
+            const pBadge = r.priority_name === 'CRITICAL' ? 'badge-danger' : r.priority_name === 'HIGH' ? 'badge-warning' : r.priority_name === 'NORMAL' ? 'badge-info' : 'badge-purple';
+            return `<div class="list-item">
+                <div class="item-icon">🔧</div>
+                <div class="item-info"><div class="item-title">Xona ${r.room_number} — ${r.description}</div><div class="item-sub">${r.assigned_to || 'Tayinlanmagan'} • ${r.status}</div></div>
+                <span class="item-badge ${pBadge}">${r.priority_name}</span>
+                ${r.status !== 'completed' ? `<button class="btn btn-sm btn-success" style="width:auto;padding:4px 10px;font-size:11px;margin-left:8px" onclick="resolveIssue('${r.request_id}')">✓</button>` : ''}
+            </div>`;
+        }).join('');
+        if (qEl) {
+            const open = requests.filter(r => r.status !== 'completed');
+            qEl.innerHTML = open.length ? open.slice(0,5).map(r => `<div class="list-item"><div class="item-icon">⚡</div><div class="item-info"><div class="item-title">${r.description}</div><div class="item-sub">Xona ${r.room_number}</div></div></div>`).join('') : '<p style="color:var(--text-muted)">Navbat bo\'sh</p>';
+        }
+    }
+
+    function renderHousekeeping() {
+        // This loads from housekeeping service directly
+        fetch(API + '/api/housekeeping/queue').then(r=>r.json()).then(data => {
+            const el = document.getElementById('hk-queue');
+            if (!el) return;
+            document.getElementById('hk-queue-count').textContent = data.queue_length || 0;
+            if (!data.queue || data.queue.length === 0) { el.innerHTML = '<p style="color:var(--text-muted)">Navbat bo\'sh</p>'; return; }
+            el.innerHTML = data.queue.map(t => `
+                <div class="list-item"><div class="item-icon">🧹</div><div class="item-info"><div class="item-title">Xona ${t.room_number}</div><div class="item-sub">${t.added_at ? new Date(t.added_at).toLocaleTimeString() : ''}</div></div><span class="item-badge badge-warning">Kutmoqda</span></div>
+            `).join('');
+        }).catch(()=>{});
+        fetch(API + '/api/housekeeping/history').then(r=>r.json()).then(data => {
+            const el = document.getElementById('hk-history');
+            if (!el || !data.history) return;
+            el.innerHTML = data.history.slice(-10).reverse().map(h => `
+                <div class="list-item"><div class="item-icon">✅</div><div class="item-info"><div class="item-title">Xona ${h.room_number}</div><div class="item-sub">${h.cleaner || ''} • ${h.completed_at ? new Date(h.completed_at).toLocaleTimeString() : ''}</div></div><span class="item-badge badge-success">Toza</span></div>
+            `).join('') || '<p style="color:var(--text-muted)">Tarix bo\'sh</p>';
+        }).catch(()=>{});
+    }
+
+    function getStatusText(status) {
+        const map = { clean:'Toza', occupied:'Band', dirty:'Iflos', cleaning:'Tozalanmoqda', maintenance:'Texnik' };
+        return map[status] || status;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ACTIONS
+    // ═══════════════════════════════════════════════════════
+    async function doCheckIn() {
+        const data = {
+            guest_name: document.getElementById('checkin-name').value,
+            room_type: document.getElementById('checkin-type').value,
+            floor_preference: document.getElementById('checkin-floor').value || null,
+            near_elevator: document.getElementById('checkin-elevator').value === 'true',
+            nights: parseInt(document.getElementById('checkin-nights').value) || 1
+        };
+        if (!data.guest_name) { toast('Mehmon ismini kiriting', 'error'); return; }
+        try {
+            const resp = await fetch(API + '/api/reception/check-in', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+            const result = await resp.json();
+            if (resp.ok) { toast(`✓ ${result.guest} → Xona ${result.room.number}`, 'success'); document.getElementById('checkin-name').value=''; loadState(); }
+            else { toast(result.error || 'Xato', 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function doCheckOut() {
+        const room = document.getElementById('checkout-room').value;
+        if (!room) { toast('Xona raqamini kiriting', 'error'); return; }
+        try {
+            const resp = await fetch(API + '/api/reception/check-out', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({room_number:parseInt(room)}) });
+            const result = await resp.json();
+            if (resp.ok) {
+                toast(`✓ Check-out: $${result.bill.total.toFixed(2)}`, 'success');
+                document.getElementById('checkout-result').innerHTML = `<div class="list-item"><div class="item-info"><div class="item-title">${result.bill.guest_name}</div><div class="item-sub">Jami: $${result.bill.total.toFixed(2)} (${result.bill.nights} tun × $${result.bill.room_price_per_night})</div></div></div>`;
+                loadState();
+            } else { toast(result.error || 'Xato', 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function doStartCleaning() {
+        try {
+            const resp = await fetch(API + '/api/housekeeping/start-cleaning', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({cleaner_name: currentUser?.name || 'Tozalovchi'}) });
+            const result = await resp.json();
+            if (resp.ok) { toast(`🧹 Xona ${result.room_number} tozalash boshlandi`, 'success'); loadState(); renderHousekeeping(); }
+            else { toast(result.error || 'Navbat bo\'sh', 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function doMarkClean() {
+        const room = document.getElementById('hk-room').value;
+        if (!room) { toast('Xona raqamini kiriting', 'error'); return; }
+        try {
+            const resp = await fetch(API + '/api/housekeeping/mark-clean', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({room_number:parseInt(room)}) });
+            const result = await resp.json();
+            if (resp.ok) { toast(`✓ Xona ${room} toza!`, 'success'); document.getElementById('hk-room').value=''; loadState(); renderHousekeeping(); }
+            else { toast(result.error, 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function doPlaceOrder() {
+        const room = document.getElementById('order-room').value;
+        if (!room) { toast('Xona raqamini kiriting', 'error'); return; }
+        const items = [];
+        document.querySelectorAll('.order-item-row').forEach(row => {
+            const qty = parseInt(row.querySelector('.order-qty').value);
+            if (qty > 0) items.push({ item: row.dataset.item, quantity: qty });
+        });
+        if (items.length === 0) { toast('Kamida 1 ta mahsulot tanlang', 'error'); return; }
+        try {
+            const resp = await fetch(API + '/api/roomservice/order', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({room_number:parseInt(room), items}) });
+            const result = await resp.json();
+            if (resp.ok) { toast(`✓ Buyurtma: $${result.order.total_price.toFixed(2)}`, 'success'); loadState(); document.querySelectorAll('.order-qty').forEach(i=>i.value='0'); }
+            else { toast(result.error, 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function advanceOrder(orderId, currentStatus) {
+        const next = { received:'preparing', preparing:'delivering', delivering:'delivered' };
+        const newStatus = next[currentStatus];
+        if (!newStatus) return;
+        try {
+            const resp = await fetch(API + '/api/roomservice/order/status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({order_id:orderId, status:newStatus}) });
+            if (resp.ok) { toast(`→ ${orderId}: ${newStatus}`, 'info'); loadState(); }
+        } catch(e) {}
+    }
+
+    async function doReportIssue() {
+        const data = {
+            room_number: parseInt(document.getElementById('maint-room').value),
+            description: document.getElementById('maint-desc').value,
+            priority: document.getElementById('maint-priority').value
+        };
+        if (!data.room_number || !data.description) { toast('Barcha maydonlarni to\'ldiring', 'error'); return; }
+        try {
+            const resp = await fetch(API + '/api/maintenance/report', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+            const result = await resp.json();
+            if (resp.ok) { toast(`✓ ${result.request.request_id} → ${result.request.assigned_to}`, 'success'); document.getElementById('maint-desc').value=''; loadState(); }
+            else { toast(result.error, 'error'); }
+        } catch(e) { toast('Server xatosi', 'error'); }
+    }
+
+    async function resolveIssue(requestId) {
+        try {
+            const resp = await fetch(API + '/api/maintenance/resolve', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:requestId}) });
+            if (resp.ok) { toast(`✓ ${requestId} hal etildi`, 'success'); loadState(); }
+        } catch(e) {}
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // UI HELPERS
+    // ═══════════════════════════════════════════════════════
+    function switchPage(pageName) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageName)?.classList.add('active');
+        document.querySelector(`.nav-item[data-page="${pageName}"]`)?.classList.add('active');
+        const titles = { dashboard:'📊 Bosh Sahifa', rooms:'🛏️ Xonalar', reception:'🛎️ Qabul Xizmati', housekeeping:'🧹 Tozalash', roomservice:'🍽️ Xona Xizmati', maintenance:'🔧 Texnik Xizmat', events:'📋 Hodisalar' };
+        document.getElementById('page-title').textContent = titles[pageName] || pageName;
+        if (pageName === 'housekeeping') renderHousekeeping();
+    }
+
+    function toast(message, type='info') {
+        const container = document.getElementById('toast-container');
+        const t = document.createElement('div');
+        t.className = 'toast toast-' + type;
+        t.textContent = message;
+        container.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
+
+    function buildMenuForm() {
+        fetch(API + '/api/roomservice/menu').then(r=>r.json()).then(data => {
+            const menuEl = document.getElementById('menu-list');
+            const formEl = document.getElementById('order-items-form');
+            if (menuEl) {
+                menuEl.innerHTML = Object.entries(data.menu).map(([key, item]) =>
+                    `<div class="list-item"><div class="item-icon">🍽️</div><div class="item-info"><div class="item-title">${item.name}</div><div class="item-sub">${key}</div></div><span class="item-badge badge-info">$${item.price.toFixed(2)}</span></div>`
+                ).join('');
+            }
+            if (formEl) {
+                formEl.innerHTML = Object.entries(data.menu).map(([key, item]) =>
+                    `<div class="order-item-row" data-item="${key}" style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="flex:1;font-size:13px">${item.name} ($${item.price})</span><input type="number" class="order-qty" value="0" min="0" max="10" style="width:60px;padding:6px;border:1px solid #2d3748;border-radius:6px;background:var(--bg-card);color:var(--text);font-size:13px"></div>`
+                ).join('');
+            }
+        }).catch(()=>{});
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════
+    (function init() {
+        const saved = localStorage.getItem('hotelos_user');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            showApp();
+        }
+    })();
+    </script>
+</body>
+</html>
