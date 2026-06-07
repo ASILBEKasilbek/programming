@@ -256,6 +256,18 @@ async def handle_check_in(request: web.Request) -> web.Response:
     """
     POST /check-in
     Mehmon check-in — xona tayinlash algoritmini ishga tushiradi.
+
+    Request Body:
+        guest_name (str): Mehmon ismi (majburiy)
+        room_type (str): Xona turi - single/double/suite/accessible (majburiy)
+        floor_preference (int): Qavat afzalligi - 1 yoki 2 (ixtiyoriy)
+        near_elevator (bool): Liftga yaqin xona (ixtiyoriy, default: false)
+        nights (int): Tunlar soni (ixtiyoriy, default: 1)
+
+    Returns:
+        200: Muvaffaqiyatli check-in + tayinlangan xona ma'lumotlari
+        400: Validatsiya xatosi
+        404: Mos xona topilmadi
     """
     try:
         data = await request.json()
