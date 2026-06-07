@@ -156,10 +156,16 @@ class MaintenanceRequest:
     resolved_at: Optional[datetime] = None
 
     def __lt__(self, other):
-        """Priority queue uchun solishtirish."""
+        """Priority queue uchun solishtirish (heapq talab qiladi)."""
         if self.priority.value != other.priority.value:
             return self.priority.value < other.priority.value
         return self.created_at < other.created_at
+
+    def __eq__(self, other):
+        """Tenglikni tekshirish."""
+        if not isinstance(other, MaintenanceRequest):
+            return False
+        return self.request_id == other.request_id
 
     def to_dict(self) -> dict:
         return {
