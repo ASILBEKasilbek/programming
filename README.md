@@ -120,6 +120,50 @@ HotelOS/
 └── README.md
 ```
 
+## Live Demo
+
+🌐 **https://programming.asilbek.tech** — Real-time Dashboard
+
+### API Endpointlar (production)
+```
+GET  https://programming.asilbek.tech/api/reception/rooms
+POST https://programming.asilbek.tech/api/reception/check-in
+POST https://programming.asilbek.tech/api/reception/check-out
+GET  https://programming.asilbek.tech/api/roomservice/menu
+POST https://programming.asilbek.tech/api/roomservice/order
+POST https://programming.asilbek.tech/api/maintenance/report
+GET  https://programming.asilbek.tech/api/housekeeping/queue
+```
+
+## CI/CD Pipeline
+
+GitHub Actions orqali avtomatik deploy:
+- `main` branchga push qilinganda server avtomatik yangilanadi
+- Health check: barcha 5 ta servis tekshiriladi
+- Zero-downtime deploy: systemd restart
+
+## Server Arxitekturasi
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Nginx (Reverse Proxy)                  │
+│              programming.asilbek.tech:80/443             │
+│   ┌─────────────────────────────────────────────────┐   │
+│   │  /              → Dashboard (WebSocket) :8080   │   │
+│   │  /ws            → WebSocket upgrade     :8080   │   │
+│   │  /api/reception → Reception Service     :8001   │   │
+│   │  /api/housekeeping → Housekeeping       :8002   │   │
+│   │  /api/roomservice  → Room Service       :8003   │   │
+│   │  /api/maintenance  → Maintenance        :8004   │   │
+│   └─────────────────────────────────────────────────┘   │
+│                                                         │
+│   ┌───────────────┐   ┌───────────────────────────┐    │
+│   │  Redis Server │   │  Systemd Service Manager  │    │
+│   │  (Pub/Sub)    │   │  (auto-restart, logging)  │    │
+│   └───────────────┘   └───────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+```
+
 ## Git Log
 
 ```
