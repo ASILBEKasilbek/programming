@@ -17,6 +17,7 @@ import json
 import logging
 import sys
 import os
+import re
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from aiohttp import web
@@ -268,6 +269,10 @@ async def handle_check_in(request: web.Request) -> web.Response:
 
     if len(guest_name) > 100:
         return web.json_response({"error": "Ism juda uzun (max 100)"}, status=400)
+
+    # Xavfsizlik: faqat harflar, bo'shliqlar va asosiy belgilar
+    if not re.match(r"^[a-zA-Z\u0400-\u04FF\u0600-\u06FF\s'.\\-]{1,100}$", guest_name):
+        return web.json_response({"error": "Ism faqat harflar va bo'shliqdan iborat bo'lishi kerak"}, status=400)
 
     # Xona turini tekshirish
     try:
