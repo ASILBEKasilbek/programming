@@ -1,0 +1,5 @@
+redis==5.2.1
+websockets==14.1
+aiohttp==3.11.11
+bcrypt==4.2.1
+pyjwt==2.13.0
