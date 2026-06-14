@@ -19,7 +19,7 @@ import sys
 import os
 import re
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict
+from typing imp1qqort Optional, List, Dict
 from aiohttp import web
 
 # Loyiha root papkasini path'ga qo'shish

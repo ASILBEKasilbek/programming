@@ -41,7 +41,8 @@ connected_clients: Set[web.WebSocketResponse] = set()
 broker = None
 
 # Event log (oxirgi 50 ta)
-event_log = []
+from collections import deque as event_deque
+event_log = event_deque(maxlen=50)
 
 
 async def broadcast_to_clients(data: dict):
@@ -73,8 +74,6 @@ async def handle_any_event(data: dict, event_type: str):
         "timestamp": datetime.now().isoformat(),
     }
     event_log.append(event_entry)
-    if len(event_log) > 50:
-        event_log.pop(0)
 
     await broadcast_to_clients(event_entry)
     logger.info(f"EVENT -> clients ({len(connected_clients)}): {event_type}")
@@ -131,7 +130,7 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
     }))
 
     # Oxirgi hodisalarni yuborish
-    for event in event_log[-10:]:
+    for event in list(event_log)[-10:]:
         await ws.send_str(json.dumps(event))
 
     try:
@@ -195,7 +194,7 @@ async def handle_get_state(request: web.Request) -> web.Response:
             "rooms": rooms_data,
             "orders": orders_data,
             "maintenance": maintenance_data,
-            "event_log": event_log[-20:],
+            "event_log": list(event_log)[-20:],
             "connected_clients": len(connected_clients),
         })
     except Exception as e:
@@ -204,7 +203,7 @@ async def handle_get_state(request: web.Request) -> web.Response:
 
 async def handle_get_events(request: web.Request) -> web.Response:
     """GET /events — Hodisalar jurnali."""
-    return web.json_response({"events": event_log})
+    return web.json_response({"events": list(event_log)})
 
 
 # ═══════════════════════════════════════════════════════

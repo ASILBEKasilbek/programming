@@ -101,7 +101,10 @@ async def handle_report_issue(request: web.Request) -> web.Response:
     if not description:
         return web.json_response({"error": "Muammo tavsifi kerak"}, status=400)
 
-    room_number = int(room_number)
+    try:
+        room_number = int(room_number)
+    except (ValueError, TypeError):
+        return web.json_response({"error": "Noto'g'ri xona raqami formati"}, status=400)
 
     # Priority tekshiruvi
     priority_map = {

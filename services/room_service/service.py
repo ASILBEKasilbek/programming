@@ -84,7 +84,10 @@ async def handle_place_order(request: web.Request) -> web.Response:
     if not items_raw:
         return web.json_response({"error": "Kamida bitta buyurtma kerak"}, status=400)
 
-    room_number = int(room_number)
+    try:
+        room_number = int(room_number)
+    except (ValueError, TypeError):
+        return web.json_response({"error": "Noto'g'ri xona raqami formati"}, status=400)
 
     # Buyurtma elementlarini tekshirish
     items = []
@@ -166,7 +169,10 @@ async def handle_update_status(request: web.Request) -> web.Response:
 
     # Navbatdan olib tashlash
     if new_status != OrderStatus.RECEIVED and order_id in order_queue:
-        order_queue.remove(order_id)
+        try:
+            order_queue.remove(order_id)
+        except ValueError:
+            pass
 
     # Broker orqali nashr etish
     await broker.publish("order.status_changed", {
