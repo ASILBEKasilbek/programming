@@ -19,7 +19,7 @@ import sys
 import os
 import re
 from datetime import datetime, timedelta
-from typing imp1qqort Optional, List, Dict
+from typing import Optional, List, Dict
 from aiohttp import web
 
 # Loyiha root papkasini path'ga qo'shish
@@ -97,7 +97,7 @@ def assign_room(
     1. Xona turi mos kelishini tekshir (SINGLE, DOUBLE, SUITE, ACCESSIBLE)
     2. Faqat CLEAN holatdagi xonalarni tanla
     3. Eng uzoq toza xonani ustunlik ber (tekis aylantirish)
-    4. Qavat afzalligi — ikkinchi darajali filtr
+    4. Qav at afzalligi — ikkinchi darajali filtr
     5. Yaqinlik afzalligi — yakuniy hal qiluvchi
 
     Args:
@@ -502,8 +502,53 @@ def create_app() -> web.Application:
     return app
 
 
+def initialize_test_data():
+    """Test ma'lumotlarini yaratish — demo mehmonlar."""
+    global rooms, guests
+
+    # 3 ta xonani band qilish (test mehmonlar)
+    test_guests_data = [
+        {"name": "Alisher Karimov", "room_idx": 1, "nights": 3, "charges": [
+            {"description": "Xona xizmati: Qahva", "price": 5.0, "quantity": 2},
+        ]},
+        {"name": "Nilufar Rashidova", "room_idx": 3, "nights": 5, "charges": []},
+        {"name": "Jamshid Toshmatov", "room_idx": 6, "nights": 2, "charges": [
+            {"description": "Xona xizmati: Burger", "price": 15.0, "quantity": 1},
+            {"description": "Xona xizmati: Sharbat", "price": 6.0, "quantity": 2},
+        ]},
+    ]
+
+    for gdata in test_guests_data:
+        room = rooms[gdata["room_idx"]]
+        room.status = RoomStatus.OCCUPIED
+        room.guest_name = gdata["name"]
+
+        guest = Guest(
+            name=gdata["name"],
+            room_number=room.number,
+            check_in_time=datetime.now() - timedelta(hours=gdata["nights"] * 24),
+            room_type_requested=room.room_type,
+            nights=gdata["nights"],
+            charges=gdata["charges"],
+        )
+        guests[gdata["name"]] = guest
+
+    # 2 ta xonani iflos qilish (tozalash navbatiga tushadi)
+    rooms[4].status = RoomStatus.DIRTY
+    rooms[4].clean_since = None
+    rooms[7].status = RoomStatus.DIRTY
+    rooms[7].clean_since = None
+
+    # 1 ta xonani texnik xizmatda deb belgilash
+    rooms[8].status = RoomStatus.MAINTENANCE
+    rooms[8].clean_since = None
+
+    logger.info(f"Test ma'lumotlar yuklandi: {len(test_guests_data)} mehmon, 2 iflos xona, 1 texnik xizmat")
+
+
 if __name__ == "__main__":
     initialize_rooms()
+    initialize_test_data()
     app = create_app()
     logger.info("Reception Service ishga tushmoqda: http://localhost:8001")
     web.run_app(app, host="0.0.0.0", port=8001, print=None)

@@ -237,7 +237,22 @@ def create_app() -> web.Application:
     return app
 
 
+def initialize_test_data():
+    """Test ma'lumotlarini yaratish — demo tozalash navbati."""
+    # Iflos xonalarni navbatga qo'shish (reception bilan sinxron)
+    test_rooms = [105, 203]
+    for room_num in test_rooms:
+        task = {
+            "room_number": room_num,
+            "added_at": datetime.now().isoformat(),
+            "status": "queued",
+        }
+        cleaning_queue.append(task)
+    logger.info(f"Test ma'lumotlar yuklandi: {len(test_rooms)} xona navbatda")
+
+
 if __name__ == "__main__":
+    initialize_test_data()
     app = create_app()
     logger.info("Housekeeping Service ishga tushmoqda: http://localhost:8002")
     web.run_app(app, host="0.0.0.0", port=8002, print=None)

@@ -265,7 +265,39 @@ def create_app() -> web.Application:
     return app
 
 
+def initialize_test_data():
+    """Test ma'lumotlarini yaratish — demo texnik muammolar."""
+    import uuid
+    test_issues = [
+        {"room": 204, "desc": "Konditsioner ishlamayapti", "priority": MaintenancePriority.HIGH},
+        {"room": 105, "desc": "Vannada suv oqmoqda", "priority": MaintenancePriority.CRITICAL},
+        {"room": 201, "desc": "Televizor signali yo'q", "priority": MaintenancePriority.NORMAL},
+    ]
+
+    for issue in test_issues:
+        request_id = f"MNT-{uuid.uuid4().hex[:6].upper()}"
+        maint_request = MaintenanceRequest(
+            request_id=request_id,
+            room_number=issue["room"],
+            description=issue["desc"],
+            priority=issue["priority"],
+            status=MaintenanceStatus.OPEN,
+        )
+
+        all_requests[request_id] = maint_request
+        heapq.heappush(priority_queue, (issue["priority"].value, maint_request.created_at.timestamp(), request_id))
+
+        # Texnik tayinlash
+        assigned_tech = assign_to_technician(maint_request)
+        maint_request.assigned_to = assigned_tech
+        maint_request.status = MaintenanceStatus.ASSIGNED
+        technician_assignments[assigned_tech].append(request_id)
+
+    logger.info(f"Test ma'lumotlar yuklandi: {len(test_issues)} texnik muammo")
+
+
 if __name__ == "__main__":
+    initialize_test_data()
     app = create_app()
     logger.info("Maintenance Service ishga tushmoqda: http://localhost:8004")
     web.run_app(app, host="0.0.0.0", port=8004, print=None)

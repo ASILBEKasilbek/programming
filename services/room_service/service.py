@@ -240,7 +240,44 @@ def create_app() -> web.Application:
     return app
 
 
+def initialize_test_data():
+    """Test ma'lumotlarini yaratish — demo buyurtmalar."""
+    import uuid
+
+    test_orders = [
+        {"room": 102, "items": [
+            {"item": "coffee", "name": "Qahva", "price": 5.0, "quantity": 2},
+            {"item": "sandwich", "name": "Sandvich", "price": 12.0, "quantity": 1},
+        ]},
+        {"room": 104, "items": [
+            {"item": "burger", "name": "Burger", "price": 15.0, "quantity": 1},
+            {"item": "juice", "name": "Sharbat", "price": 6.0, "quantity": 2},
+        ]},
+        {"room": 202, "items": [
+            {"item": "pasta", "name": "Pasta", "price": 18.0, "quantity": 1},
+            {"item": "water", "name": "Suv", "price": 2.0, "quantity": 1},
+        ]},
+    ]
+
+    statuses = [OrderStatus.RECEIVED, OrderStatus.PREPARING, OrderStatus.DELIVERING]
+
+    for i, odata in enumerate(test_orders):
+        order_id = f"ORD-{uuid.uuid4().hex[:6].upper()}"
+        order = RoomServiceOrder(
+            order_id=order_id,
+            room_number=odata["room"],
+            items=odata["items"],
+            status=statuses[i],
+        )
+        all_orders[order_id] = order
+        if statuses[i] == OrderStatus.RECEIVED:
+            order_queue.append(order_id)
+
+    logger.info(f"Test ma'lumotlar yuklandi: {len(test_orders)} buyurtma")
+
+
 if __name__ == "__main__":
+    initialize_test_data()
     app = create_app()
     logger.info("Room Service ishga tushmoqda: http://localhost:8003")
     web.run_app(app, host="0.0.0.0", port=8003, print=None)
